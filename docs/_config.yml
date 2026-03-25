@@ -1,6 +1,10 @@
 title: nf-core RNA-seq on Cheaha
 description: A guide to running nf-core pipelines on UAB's Cheaha HPC
-theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
 
 url: https://informaticsclub.github.io
 baseurl: /nf-core-cheaha-examples
