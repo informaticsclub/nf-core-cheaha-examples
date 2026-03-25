@@ -7,7 +7,6 @@
 #SBATCH --time=12:00:00
 #SBATCH --partition=express,short
 
-module purge
 module load Singularity
 module load Nextflow
 
