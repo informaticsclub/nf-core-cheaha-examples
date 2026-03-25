@@ -17,6 +17,7 @@ This example fetches RNA-seq data from **[GSE79613](https://www.ncbi.nlm.nih.gov
 | [`params.yml`](params.yml) | Pipeline parameters (input, output, download method, etc.) |
 | [`cheaha.config`](cheaha.config) | Cheaha HPC Nextflow config ([source](https://github.com/nf-core/configs/blob/master/conf/cheaha.config)) |
 | [`run_fetchngs.sh`](run_fetchngs.sh) | SLURM batch script that runs the pipeline |
+| [`.gitignore`](.gitignore) | Ignores `logs/`, `work/`, `results/`, and `.nextflow*` |
 
 ## Quick start
 
@@ -37,7 +38,7 @@ Monitor progress with:
 squeue -u $USER
 
 # Follow the log in real time
-tail -f fetchngs_*.log
+tail -f logs/fetchngs_*.log
 ```
 
 > **Tip:** If a run fails partway through, add `-resume` to the `nextflow run` line in `run_fetchngs.sh` and resubmit with `sbatch`.
@@ -77,7 +78,7 @@ results/
 The `work/` directory holds large intermediate files. Delete it once you have confirmed the results look correct:
 
 ```bash
-rm -rf work .nextflow*
+rm -rf work results .nextflow* logs
 ```
 
 ---
