@@ -1,5 +1,5 @@
-input: "ids.csv"
-outdir: "data/raw/GSE79613"
+input: "input/ids.csv"
+outdir: "results/fetchngs"
 nf_core_pipeline: "rnaseq"
 download_method: "sratools"
 

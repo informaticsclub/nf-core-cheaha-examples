@@ -1,0 +1,6 @@
+input: "results/fetchngs/samplesheet/samplesheet.csv"
+outdir: "results/rnaseq"
+genome: "GRCh38"
+
+# Disable remote nf-core/configs loading (same reason as fetchngs).
+custom_config_base: "/dev/null"
