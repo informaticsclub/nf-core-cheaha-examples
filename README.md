@@ -14,6 +14,7 @@ This example fetches RNA-seq data from **[GSE79613](https://www.ncbi.nlm.nih.gov
 | File | Description |
 |---|---|
 | [`ids.csv`](ids.csv) | GEO accession to download (one ID per line) |
+| [`params.yml`](params.yml) | Pipeline parameters (input, output, download method, etc.) |
 | [`run_fetchngs.sh`](run_fetchngs.sh) | SLURM batch script that runs the pipeline |
 
 ## Quick start
@@ -40,16 +41,24 @@ tail -f fetchngs_*.log
 
 > **Tip:** If a run fails partway through, add `-resume` to the `nextflow run` line in `run_fetchngs.sh` and resubmit with `sbatch`.
 
-## What's in `run_fetchngs.sh`?
+## Configuration
+
+Pipeline parameters live in [`params.yml`](params.yml) — edit this file to change inputs or behaviour without touching the submission script:
+
+```yaml
+input: "ids.csv"            # Accession list
+outdir: "results"           # Where final files are written
+nf_core_pipeline: "rnaseq"  # Format samplesheet for nf-core/rnaseq
+download_method: "ftp"      # ftp (default) or sratools
+```
+
+The SLURM script [`run_fetchngs.sh`](run_fetchngs.sh) handles modules and passes this file to Nextflow:
 
 | Flag | Purpose |
 |---|---|
 | `-r 1.12.0` | Pin to a specific pipeline version for reproducibility |
 | `-profile cheaha` | Uses the [pre-configured Cheaha profile](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) (Singularity + SLURM) |
-| `--input ids.csv` | File with accession(s), one per line |
-| `--outdir results` | Where final files are written |
-| `--nf_core_pipeline rnaseq` | Formats the auto-generated samplesheet for direct use with [nf-core/rnaseq](https://nf-co.re/rnaseq) |
-| `--download_method ftp` | Download FASTQs via FTP (default). Use `sratools` if FTP is unreliable or you need technical reads |
+| `-params-file params.yml` | Reads all `--` pipeline parameters from the YAML file |
 
 ## Output
 

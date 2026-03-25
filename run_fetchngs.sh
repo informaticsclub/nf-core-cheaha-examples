@@ -14,7 +14,4 @@ module load Nextflow
 nextflow run nf-core/fetchngs \
     -r 1.12.0 \
     -profile cheaha \
-    --input ids.csv \
-    --outdir results \
-    --nf_core_pipeline rnaseq \
-    --download_method ftp
+    -params-file params.yml

@@ -1,0 +1,4 @@
+input: "ids.csv"
+outdir: "results"
+nf_core_pipeline: "rnaseq"
+download_method: "ftp"
