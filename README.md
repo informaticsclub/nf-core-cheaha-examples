@@ -34,7 +34,8 @@ See the **[tutorial](docs/tutorial.md)** for a detailed walkthrough.
 ```
 .
 ├── conf/
-│   └── cheaha.config              # Cheaha Nextflow config (source)
+│   ├── cheaha.config              # Cheaha Nextflow config (source)
+│   └── nfcore_custom.config       # Empty placeholder (prevents remote config loading)
 ├── docs/
 │   ├── tutorial.md                # Step-by-step tutorial
 │   └── nf-core-overview.md        # How nf-core pipelines work

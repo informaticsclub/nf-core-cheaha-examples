@@ -1,7 +1,3 @@
 input: "results/fetchngs/samplesheet/samplesheet.csv"
 outdir: "results/rnaseq"
 genome: "GRCh38"
-
-# Point at local conf/ with an empty nfcore_custom.config placeholder
-# to prevent the pipeline from loading remote nf-core/configs.
-custom_config_base: "conf"

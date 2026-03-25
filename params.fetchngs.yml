@@ -2,8 +2,3 @@ input: "input/ids.csv"
 outdir: "results/fetchngs"
 nf_core_pipeline: "rnaseq"
 download_method: "sratools"
-
-# Point at the local conf/ directory so the pipeline loads
-# conf/nfcore_custom.config (an empty placeholder) instead of
-# trying to fetch the remote nf-core/configs version.
-custom_config_base: "conf"
