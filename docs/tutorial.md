@@ -94,13 +94,11 @@ input: "input/ids.csv"          # Accession list
 outdir: "results/fetchngs"     # Output directory
 nf_core_pipeline: "rnaseq"      # Format samplesheet for nf-core/rnaseq
 download_method: "sratools"     # Use sratools (FTP is blocked on Cheaha compute nodes)
-custom_config_base: "conf"     # Load local empty placeholder instead of remote nf-core/configs
 ```
 
 Key choices:
 - **`download_method: "sratools"`** — FTP is blocked on Cheaha compute nodes, so we use sratools which downloads over HTTPS instead.
 - **`nf_core_pipeline: "rnaseq"`** — This tells fetchngs to format the output samplesheet with the columns that nf-core/rnaseq expects (`sample`, `fastq_1`, `fastq_2`, `strandedness`). Strandedness defaults to `auto`.
-- **`custom_config_base: "conf"`** — Every nf-core pipeline tries to load institutional configs from `${custom_config_base}/nfcore_custom.config`. By default this is a remote URL that can fail. We point it at our local `conf/` directory which contains an empty [`nfcore_custom.config`](../conf/nfcore_custom.config) placeholder. We supply the real Cheaha config via `-c` instead.
 
 ### Submit the job
 
@@ -152,7 +150,7 @@ The critical file is **`results/fetchngs/samplesheet/samplesheet.csv`** — this
 |---|---|---|
 | `metadata/` exists but no `fastq/` | FTP downloads failed silently | Verify `download_method: "sratools"` in params |
 | `Unknown method invocation 'env'` | Cheaha config uses `env()` (Nextflow 25+) | Our local [`conf/cheaha.config`](../conf/cheaha.config) uses `System.getenv()` instead |
-| `Config file does not exist: .../workflows/sra/nextflow.config` | Pipeline tries to load remote pipeline-specific config | Verify `custom_config_base: "conf"` in params |
+| `Cannot read config file include: .../nfcore_custom.config` | Remote config loading failed | Check network access; the default `custom_config_base` URL should work over HTTPS |
 | Job completes instantly with no output | `./nextflow` not found | Run `bash scripts/install_nextflow.sh` first |
 
 ## Step 2: Run RNA-seq analysis
@@ -174,7 +172,6 @@ The parameters are in [`params.rnaseq.yml`](../params.rnaseq.yml):
 input: "results/fetchngs/samplesheet/samplesheet.csv"  # From fetchngs
 outdir: "results/rnaseq"                                # Output directory
 genome: "GRCh38"                                        # iGenomes reference
-custom_config_base: "conf"
 ```
 
 Key choices:

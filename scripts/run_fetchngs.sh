@@ -15,6 +15,5 @@ module load Java
 
 ./nextflow -log logs/nextflow_fetchngs.log run nf-core/fetchngs \
     -r 1.12.0 \
-    -c conf/cheaha.config \
-    -params-file params.fetchngs.yml \
-    --custom_config_base "${PWD}/conf"
+    -profile cheaha \
+    -params-file params.fetchngs.yml

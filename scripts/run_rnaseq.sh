@@ -15,6 +15,5 @@ module load Java
 
 ./nextflow -log logs/nextflow_rnaseq.log run nf-core/rnaseq \
     -r 3.23.0 \
-    -c conf/cheaha.config \
-    -params-file params.rnaseq.yml \
-    --custom_config_base "${PWD}/conf"
+    -profile cheaha \
+    -params-file params.rnaseq.yml

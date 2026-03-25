@@ -6,11 +6,11 @@
 # install it to ~/bin instead so it is on your $PATH everywhere:
 #
 #   mkdir -p ~/bin && cd ~/bin
-#   export NXF_VER=24.10.4 && curl -s https://get.nextflow.io | bash
+#   export NXF_VER=25.10.4 && curl -s https://get.nextflow.io | bash
 #
 # Then you can use 'nextflow' directly instead of './nextflow'.
 
-export NXF_VER=24.10.4
+export NXF_VER=25.10.4
 
 module load Java
 
