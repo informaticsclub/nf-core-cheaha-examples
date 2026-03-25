@@ -2,5 +2,6 @@ input: "results/fetchngs/samplesheet/samplesheet.csv"
 outdir: "results/rnaseq"
 genome: "GRCh38"
 
-# Disable remote nf-core/configs loading (same reason as fetchngs).
-custom_config_base: "/dev/null"
+# Point at local conf/ with an empty nfcore_custom.config placeholder
+# to prevent the pipeline from loading remote nf-core/configs.
+custom_config_base: "conf"
