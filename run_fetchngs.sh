@@ -7,6 +7,8 @@
 #SBATCH --time=12:00:00
 #SBATCH --partition=express,short
 
+mkdir -p logs
+
 module load Singularity
 module load Nextflow
 
