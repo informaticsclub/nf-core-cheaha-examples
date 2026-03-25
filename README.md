@@ -9,12 +9,13 @@ This example fetches RNA-seq data from **[GSE79613](https://www.ncbi.nlm.nih.gov
 - A Cheaha HPC account ([request access](https://www.uab.edu/it/home/research-computing))
 - Familiarity with the Linux command line and SLURM
 
-## Repo contents
+## Repo contents    
 
 | File | Description |
 |---|---|
 | [`ids.csv`](ids.csv) | GEO accession to download (one ID per line) |
 | [`params.yml`](params.yml) | Pipeline parameters (input, output, download method, etc.) |
+| [`cheaha.config`](cheaha.config) | Cheaha HPC Nextflow config ([source](https://github.com/nf-core/configs/blob/master/conf/cheaha.config)) |
 | [`run_fetchngs.sh`](run_fetchngs.sh) | SLURM batch script that runs the pipeline |
 
 ## Quick start
@@ -27,7 +28,7 @@ cd nf-core-cheaha-examples
 sbatch run_fetchngs.sh
 ```
 
-That's it. The batch script loads the required modules (Singularity, Nextflow) and launches the pipeline. Nextflow submits each task as its own SLURM job via the [Cheaha profile](https://github.com/nf-core/configs/blob/master/conf/cheaha.config).
+That's it. The batch script loads the required modules (Singularity, Nextflow) and launches the pipeline. The included [`cheaha.config`](cheaha.config) tells Nextflow to use Singularity and submit each task as its own SLURM job.
 
 Monitor progress with:
 
@@ -57,7 +58,7 @@ The SLURM script [`run_fetchngs.sh`](run_fetchngs.sh) handles modules and passes
 | Flag | Purpose |
 |---|---|
 | `-r 1.12.0` | Pin to a specific pipeline version for reproducibility |
-| `-profile cheaha` | Uses the [pre-configured Cheaha profile](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) (Singularity + SLURM) |
+| `-c cheaha.config` | Local copy of the [Cheaha config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) (Singularity + SLURM). Loaded with `-c` to avoid remote config-loading issues with `-profile` |
 | `-params-file params.yml` | Reads all `--` pipeline parameters from the YAML file |
 
 ## Output

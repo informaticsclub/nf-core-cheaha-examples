@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=fetchngs
-#SBATCH --output=fetchngs_%j.log
+#SBATCH --output=logs/fetchngs_%j.log
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
@@ -12,5 +12,5 @@ module load Nextflow
 
 nextflow run nf-core/fetchngs \
     -r 1.12.0 \
-    -profile cheaha \
+    -c cheaha.config \
     -params-file params.yml
