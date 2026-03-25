@@ -7,9 +7,8 @@
 #SBATCH --time=12:00:00
 #SBATCH --partition=express,short
 
-# Resolve paths relative to repo root regardless of where sbatch is called
-REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$REPO_DIR"
+# SLURM runs from the directory where sbatch was called
+cd "$SLURM_SUBMIT_DIR"
 
 module load Singularity
 module load Java
