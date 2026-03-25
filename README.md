@@ -16,8 +16,9 @@ This example fetches RNA-seq data from **[GSE79613](https://www.ncbi.nlm.nih.gov
 | [`ids.csv`](ids.csv) | GEO accession to download (one ID per line) |
 | [`params.yml`](params.yml) | Pipeline parameters (input, output, download method, etc.) |
 | [`cheaha.config`](cheaha.config) | Cheaha HPC Nextflow config ([source](https://github.com/nf-core/configs/blob/master/conf/cheaha.config)) |
+| [`install_nextflow.sh`](install_nextflow.sh) | One-time script to install a compatible Nextflow version locally |
 | [`run_fetchngs.sh`](run_fetchngs.sh) | SLURM batch script that runs the pipeline |
-| [`.gitignore`](.gitignore) | Ignores `logs/`, `work/`, `results/`, and `.nextflow*` |
+| [`.gitignore`](.gitignore) | Ignores `logs/`, `work/`, `results/`, `nextflow`, and `.nextflow*` |
 
 ## Quick start
 
@@ -26,10 +27,13 @@ SSH into Cheaha, then:
 ```bash
 git clone https://github.com/<your-org>/nf-core-cheaha-examples.git
 cd nf-core-cheaha-examples
+bash install_nextflow.sh   # one-time setup
 sbatch run_fetchngs.sh
 ```
 
-That's it. The batch script loads the required modules (Singularity, Nextflow) and launches the pipeline. The included [`cheaha.config`](cheaha.config) tells Nextflow to use Singularity and submit each task as its own SLURM job.
+The install script is only needed once — it downloads a compatible Nextflow binary into the repo directory. The Cheaha `Nextflow` module (v21.08.0) is too old for this pipeline.
+
+The batch script then loads the required modules (Singularity, Java) and launches the pipeline. The included [`cheaha.config`](cheaha.config) tells Nextflow to use Singularity and submit each task as its own SLURM job.
 
 Monitor progress with:
 

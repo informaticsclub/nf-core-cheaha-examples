@@ -10,9 +10,9 @@
 mkdir -p logs
 
 module load Singularity
-module load Nextflow
+module load Java
 
-nextflow run nf-core/fetchngs \
+./nextflow run nf-core/fetchngs \
     -r 1.12.0 \
     -c cheaha.config \
     -params-file params.yml

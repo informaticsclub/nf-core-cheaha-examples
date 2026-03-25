@@ -2,3 +2,4 @@ logs/
 work/
 results/
 .nextflow*
+nextflow
