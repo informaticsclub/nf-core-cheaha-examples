@@ -1,4 +1,10 @@
 input: "ids.csv"
-outdir: "results"
+outdir: "data/raw/GSE79613"
 nf_core_pipeline: "rnaseq"
-download_method: "ftp"
+download_method: "sratools"
+
+# Disable remote nf-core/configs loading.
+# The pipeline's nextflow.config tries to includeConfig from this URL,
+# which fails for pipeline-specific workflow configs that don't exist remotely.
+# We supply the Cheaha config directly via -c instead.
+custom_config_base: "/dev/null"

@@ -55,7 +55,7 @@ Pipeline parameters live in [`params.yml`](params.yml) — edit this file to cha
 input: "ids.csv"            # Accession list
 outdir: "results"           # Where final files are written
 nf_core_pipeline: "rnaseq"  # Format samplesheet for nf-core/rnaseq
-download_method: "ftp"      # ftp (default) or sratools
+download_method: "sratools" # sratools (FTP is blocked on Cheaha compute nodes)
 ```
 
 The SLURM script [`run_fetchngs.sh`](run_fetchngs.sh) handles modules and passes this file to Nextflow:
