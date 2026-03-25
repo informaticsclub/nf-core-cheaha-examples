@@ -12,22 +12,15 @@ Dataset: **[GSE79613](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7961
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-org>/nf-core-cheaha-examples.git
+git clone https://github.com/informaticsclub/nf-core-cheaha-examples.git
 cd nf-core-cheaha-examples
-bash scripts/install_nextflow.sh    # one-time setup
+sh scripts/install_nextflow.sh    # one-time setup
 sbatch scripts/run_fetchngs.sh      # Step 1: download FASTQs
 # … wait for completion …
 sbatch scripts/run_rnaseq.sh        # Step 2: RNA-seq analysis
 ```
 
-See the **[tutorial](docs/tutorial.md)** for a detailed walkthrough.
-
-## Documentation
-
-| Guide | Description |
-|---|---|
-| **[Tutorial](docs/tutorial.md)** | Step-by-step walkthrough of the full workflow |
-| **[nf-core Overview](docs/nf-core-overview.md)** | How nf-core pipelines are structured and how they run on HPC |
+See the **[full documentation](https://informaticsclub.github.io/nf-core-cheaha-examples/)** for a detailed tutorial and nf-core overview.
 
 ## Repo structure
 

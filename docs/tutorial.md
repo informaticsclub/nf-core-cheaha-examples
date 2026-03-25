@@ -1,8 +1,25 @@
+---
+title: Tutorial
+layout: default
+nav_order: 2
+---
+
 # Tutorial: RNA-seq analysis on Cheaha with nf-core
+{: .no_toc }
 
 This walkthrough takes you from a GEO accession to a complete RNA-seq analysis on UAB's Cheaha HPC cluster. No prior nf-core or Nextflow experience is needed.
+{: .fs-6 .fw-300 }
 
-> **New to nf-core?** Read the [nf-core pipeline overview](nf-core-overview.md) first to understand how pipelines are structured, how the config system works, and what happens inside the `work/` directory.
+> **New to nf-core?** Read the [nf-core pipeline overview]({% link nf-core-overview.md %}) first to understand how pipelines are structured, how the config system works, and what happens inside the `work/` directory.
+
+<details open markdown="block">
+  <summary>Table of contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
+---
 
 ## Overview
 
@@ -49,13 +66,13 @@ cd nf-core-cheaha-examples
 
 ### Install Nextflow
 
-The Cheaha `Nextflow` module is v21.08.0, which is too old for current nf-core pipelines (fetchngs 1.12.0 requires >=23.04.0). Run the install script once to get a compatible version:
+The Cheaha `Nextflow` module is v21.08.0, which is too old for current nf-core pipelines (rnaseq 3.23.0 requires >=25.04.3). Run the install script once to get a compatible version:
 
 ```bash
 bash scripts/install_nextflow.sh
 ```
 
-This downloads `./nextflow` (v24.10.4) into the repo directory and creates the `logs/` directory that SLURM needs.
+This downloads `./nextflow` (v25.10.4) into the repo directory and creates the `logs/` directory that SLURM needs.
 
 Verify it works:
 
@@ -64,7 +81,7 @@ module load Java
 ./nextflow -version
 ```
 
-You should see `nextflow version 24.10.4`.
+You should see `nextflow version 25.10.4`.
 
 ## Step 1: Download FASTQs with fetchngs
 
@@ -149,8 +166,7 @@ The critical file is **`results/fetchngs/samplesheet/samplesheet.csv`** — this
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `metadata/` exists but no `fastq/` | FTP downloads failed silently | Verify `download_method: "sratools"` in params |
-| `Unknown method invocation 'env'` | Cheaha config uses `env()` (Nextflow 25+) | Our local [`conf/cheaha.config`](../conf/cheaha.config) uses `System.getenv()` instead |
-| `Cannot read config file include: .../nfcore_custom.config` | Remote config loading failed | Check network access; the default `custom_config_base` URL should work over HTTPS |
+| `Unknown method invocation 'env'` | Using Nextflow 24.x or older | Re-run `bash scripts/install_nextflow.sh` to install 25.10.4+ |
 | Job completes instantly with no output | `./nextflow` not found | Run `bash scripts/install_nextflow.sh` first |
 
 ## Step 2: Run RNA-seq analysis
@@ -222,9 +238,9 @@ The **MultiQC report** (`results/rnaseq/multiqc/multiqc_report.html`) is the bes
 | STAR jobs fail with OOM | Not enough memory | Cheaha config allows up to 750 GB; retries auto-increase |
 | Very slow genome download | First run downloads iGenomes reference (~30 GB) | This is cached for future runs |
 
-## Understanding the Cheaha config
+## Understanding the Cheaha profile
 
-The [`conf/cheaha.config`](../conf/cheaha.config) is a local copy of the [upstream nf-core Cheaha config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config), modified for compatibility with Nextflow 24.x. It configures:
+Both scripts use `-profile cheaha`, which loads the [Cheaha config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) automatically from the [nf-core/configs](https://github.com/nf-core/configs) repository. This is the standard nf-core way to configure institutional HPC clusters. The profile configures:
 
 | Setting | Value | Why |
 |---|---|---|
@@ -234,7 +250,7 @@ The [`conf/cheaha.config`](../conf/cheaha.config) is a local copy of the [upstre
 | `resourceLimits` | 750 GB RAM, 128 CPUs, 150h | Matches Cheaha's maximum node specs |
 | `SINGULARITY_TMPDIR` | `$USER_SCRATCH` | Temp files go to scratch space, not `/tmp` |
 
-You should not need to edit this file.
+You should not need to edit any config files. See the [Cheaha config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md) for details.
 
 ## Clean up
 
@@ -274,7 +290,7 @@ To use this repo with a different dataset:
 
 ## Further reading
 
-- [How nf-core pipelines work](nf-core-overview.md) — Pipeline structure, config system, work directory, containers
+- [How nf-core pipelines work]({% link nf-core-overview.md %}) — Pipeline structure, config system, work directory, containers
 - [nf-core/fetchngs usage](https://nf-co.re/fetchngs/1.12.0/docs/usage/) · [output](https://nf-co.re/fetchngs/1.12.0/docs/output/)
 - [nf-core/rnaseq usage](https://nf-co.re/rnaseq/3.23.0/docs/usage/) · [output](https://nf-co.re/rnaseq/3.23.0/docs/output/)
 - [Cheaha nf-core config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md)

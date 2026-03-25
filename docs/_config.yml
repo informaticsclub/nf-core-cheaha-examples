@@ -1,0 +1,35 @@
+title: nf-core RNA-seq on Cheaha
+description: A guide to running nf-core pipelines on UAB's Cheaha HPC
+theme: just-the-docs
+
+url: https://informaticsclub.github.io
+baseurl: /nf-core-cheaha-examples
+
+# Aux links (top right of every page)
+aux_links:
+  "GitHub":
+    - "https://github.com/informaticsclub/nf-core-cheaha-examples"
+
+aux_links_new_tab: true
+
+# Footer
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/informaticsclub/nf-core-cheaha-examples"
+gh_edit_source: docs
+gh_edit_branch: main
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Color scheme
+color_scheme: light
+
+# Search
+search_enabled: true
+search:
+  heading_level: 3
+
+# Navigation
+nav_enabled: true

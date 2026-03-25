@@ -1,6 +1,23 @@
+---
+title: nf-core Overview
+layout: default
+nav_order: 3
+---
+
 # Understanding nf-core Pipelines
+{: .no_toc }
 
 This guide explains what nf-core pipelines are, how they work, and what happens when you run one on Cheaha. It's written for people who are new to Nextflow and nf-core.
+{: .fs-6 .fw-300 }
+
+<details open markdown="block">
+  <summary>Table of contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
+---
 
 ## What is Nextflow?
 
@@ -38,7 +55,7 @@ You (login node)
   │               │
   │               ├─ Nextflow starts and reads:
   │               │    - The pipeline code (cached in ~/.nextflow/assets/)
-  │               │    - conf/cheaha.config (Singularity + SLURM settings)
+  │               │    - Cheaha profile from nf-core/configs (Singularity + SLURM)
   │               │    - params.fetchngs.yml (your parameters)
   │               │
   │               ├─ For each pipeline step, Nextflow:
@@ -165,7 +182,7 @@ Nextflow has a layered config system. Settings are applied in order, with later 
 ```
 Pipeline defaults (nextflow.config)
   └── Base config (conf/base.config)        # Default resources per process
-       └── Institutional config (-c)        # Our cheaha.config
+       └── Institutional profile (-profile)  # e.g. -profile cheaha
             └── Params file (-params-file)  # Your params.fetchngs.yml
                  └── CLI flags (--outdir)   # Highest priority
 ```
@@ -178,10 +195,10 @@ This is the most common source of confusion:
 |---|---|---|
 | **What** | Pipeline-specific inputs | Infrastructure settings |
 | **Examples** | `--input`, `--genome`, `--outdir` | `executor`, `singularity`, `queue` |
-| **How to set** | `-params-file params.yml` or `--flag` | `-c cheaha.config` |
+| **How to set** | `-params-file params.yml` or `--flag` | `-profile cheaha` or `-c custom.config` |
 | **Who changes it** | You (the user) | Cluster admins / once per HPC |
 
-The params file (`params.fetchngs.yml`) says **what** to analyze. The config file (`cheaha.config`) says **how** to run it on this cluster.
+The params file (`params.fetchngs.yml`) says **what** to analyze. The profile (`-profile cheaha`) says **how** to run it on this cluster.
 
 ## Containers on Cheaha
 
