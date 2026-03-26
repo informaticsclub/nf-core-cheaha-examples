@@ -1,46 +1,51 @@
-# nf-core RNA-seq on Cheaha (UAB HPC)
+# nf-core RNA-seq on Cheaha
 
-Download public FASTQ files and run an RNA-seq analysis on UAB's Cheaha cluster using [nf-core](https://nf-co.re) pipelines.
+This repository shows how to download public RNA-seq data and analyze it on UAB's [Cheaha HPC](https://www.uab.edu/it/home/research-computing) cluster using [nf-core](https://nf-co.re) pipelines. It runs two pipelines in sequence:
 
-| Step | Pipeline | What it does |
-|---|---|---|
-| 1 | [nf-core/fetchngs v1.12.0](https://nf-co.re/fetchngs/1.12.0) | Downloads FASTQs from GEO/SRA and generates a samplesheet |
-| 2 | [nf-core/rnaseq v3.23.0](https://nf-co.re/rnaseq/3.23.0) | Alignment, quantification, and QC |
+1. [nf-core/fetchngs](https://nf-co.re/fetchngs/1.12.0) (v1.12.0) downloads FASTQ files from GEO/SRA and generates a samplesheet.
+2. [nf-core/rnaseq](https://nf-co.re/rnaseq/3.23.0) (v3.23.0) aligns reads, quantifies genes, and runs QC.
 
-Dataset: **[GSE79613](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79613)** — 11 iPSC-derived endothelial cell transcriptomes (*Homo sapiens*, Illumina HiSeq 2000).
+The example dataset is [GSE79613](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79613), 11 human iPSC-derived endothelial cell samples (paired-end, HiSeq 2000).
 
-## Quick start
+## Repository Structure
+
+- `docs/` — [Tutorial](docs/tutorial.md) and [nf-core overview](docs/nf-core-overview.md), also published at [informaticsclub.github.io/nf-core-cheaha-examples](https://informaticsclub.github.io/nf-core-cheaha-examples/)
+- `input/` — Accession list (`ids.csv`)
+- `scripts/` — Nextflow install script and SLURM submission scripts
+- `params.fetchngs.yml` / `params.rnaseq.yml` — Pipeline parameters
+
+## Setup
+
+Clone the repo and install Nextflow (the Cheaha module is too old for current nf-core pipelines):
 
 ```bash
 git clone https://github.com/informaticsclub/nf-core-cheaha-examples.git
 cd nf-core-cheaha-examples
-sh scripts/install_nextflow.sh    # one-time setup
+bash scripts/install_nextflow.sh
+```
+
+This only needs to be done once.
+
+## Running the Pipelines
+
+```bash
 sbatch scripts/run_fetchngs.sh      # Step 1: download FASTQs
-# … wait for completion …
-sbatch scripts/run_rnaseq.sh        # Step 2: RNA-seq analysis
+# wait for it to finish...
+sbatch scripts/run_rnaseq.sh        # Step 2: run the analysis
 ```
 
-See the **[full documentation](https://informaticsclub.github.io/nf-core-cheaha-examples/)** for a detailed tutorial and nf-core overview.
-
-## Repo structure
-
-```
-.
-├── docs/
-│   ├── tutorial.md                # Step-by-step tutorial
-│   └── nf-core-overview.md        # How nf-core pipelines work
-├── input/
-│   └── ids.csv                    # GEO accession(s), one per line
-├── scripts/
-│   ├── install_nextflow.sh        # One-time Nextflow install
-│   ├── run_fetchngs.sh            # SLURM job for fetchngs
-│   └── run_rnaseq.sh              # SLURM job for rnaseq
-├── params.fetchngs.yml            # fetchngs parameters
-├── params.rnaseq.yml              # rnaseq parameters
-└── .gitignore
-```
+For a full walkthrough including monitoring, expected output, troubleshooting, and how to adapt this for your own data, see the [tutorial](docs/tutorial.md).
 
 ## Resources
 
-- [nf-core/fetchngs docs](https://nf-co.re/fetchngs/1.12.0/docs/usage/) · [nf-core/rnaseq docs](https://nf-co.re/rnaseq/3.23.0/docs/usage/)
-- [Cheaha nf-core config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) · [UAB Research Computing](https://www.uab.edu/it/home/research-computing)
+- [nf-core/fetchngs docs](https://nf-co.re/fetchngs/1.12.0/docs/usage/) and [nf-core/rnaseq docs](https://nf-co.re/rnaseq/3.23.0/docs/usage/)
+- [Cheaha nf-core config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config)
+- [UAB Research Computing](https://www.uab.edu/it/home/research-computing)
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to propose changes.
+
+## License
+
+This repository is licensed under the MIT License. See [`LICENSE`](LICENSE).

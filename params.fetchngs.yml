@@ -1,4 +1,7 @@
-input: "input/ids.csv"
-outdir: "results/fetchngs"
-nf_core_pipeline: "rnaseq"
-download_method: "sratools"
+# nf-core/fetchngs parameters
+# Docs: https://nf-co.re/fetchngs/1.12.0/docs/usage/
+
+input: "input/ids.csv"           # One accession per line (GEO, SRA, ENA, DDBJ)
+outdir: "results/fetchngs"       # Where FASTQs and samplesheet are written
+nf_core_pipeline: "rnaseq"       # Format the samplesheet for nf-core/rnaseq
+download_method: "sratools"      # FTP is blocked on Cheaha; sratools uses HTTPS

@@ -4,13 +4,13 @@ layout: default
 nav_order: 2
 ---
 
-# Tutorial: RNA-seq analysis on Cheaha with nf-core
+# Tutorial
 {: .no_toc }
 
-This walkthrough takes you from a GEO accession to a complete RNA-seq analysis on UAB's Cheaha HPC cluster. No prior nf-core or Nextflow experience is needed.
+How to download public RNA-seq data and run an analysis on Cheaha, step by step.
 {: .fs-6 .fw-300 }
 
-> **New to nf-core?** Read the [nf-core pipeline overview]({% link nf-core-overview.md %}) first to understand how pipelines are structured, how the config system works, and what happens inside the `work/` directory.
+If you want to understand how nf-core pipelines work under the hood, read the [nf-core Overview]({% link nf-core-overview.md %}) first.
 
 <details open markdown="block">
   <summary>Table of contents</summary>
@@ -19,69 +19,47 @@ This walkthrough takes you from a GEO accession to a complete RNA-seq analysis o
 {:toc}
 </details>
 
----
-
 ## Overview
 
 ```
 GEO accession ──> fetchngs ──> FASTQs + samplesheet ──> rnaseq ──> counts, QC, reports
 ```
 
-We use two nf-core pipelines back-to-back:
-
-| Step | Pipeline | Version | Purpose |
-|---|---|---|---|
-| 1 | [nf-core/fetchngs](https://nf-co.re/fetchngs/1.12.0) | 1.12.0 | Download raw FASTQ files from a public repository |
-| 2 | [nf-core/rnaseq](https://nf-co.re/rnaseq/3.23.0) | 3.23.0 | Align reads, quantify gene expression, run QC |
-
-The key integration point: fetchngs outputs a **samplesheet** that rnaseq reads directly as input. No manual effort is needed.
+We run two pipelines in sequence. [nf-core/fetchngs](https://nf-co.re/fetchngs/1.12.0) (v1.12.0) downloads the raw data and writes a samplesheet. [nf-core/rnaseq](https://nf-co.re/rnaseq/3.23.0) (v3.23.0) reads that samplesheet and does the analysis.
 
 ## Prerequisites
 
-- A Cheaha HPC account ([request access](https://www.uab.edu/it/home/research-computing))
-- Basic familiarity with the Linux command line
-- Basic familiarity with SLURM job submission (`sbatch`, `squeue`)
+- A Cheaha account ([request one here](https://www.uab.edu/it/home/research-computing))
+- Comfortable with the command line and `sbatch`/`squeue`
 
 ## Dataset
 
-This example uses [GSE79613](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79613):
-
-| | |
-|---|---|
-| **Title** | iPSCs Reveal Protective Modifiers of the BMPR2 mutation in Pulmonary Arterial Hypertension |
-| **Organism** | *Homo sapiens* |
-| **Samples** | 11 (3 control, 3 unaffected BMPR2 mutation carriers, 5 FPAH patients) |
-| **Platform** | Illumina HiSeq 2000 |
-| **Library** | mRNA-seq, paired-end |
+This example uses [GSE79613](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79613), a paired-end mRNA-seq dataset from iPSC-derived endothelial cells (*Homo sapiens*, Illumina HiSeq 2000). It has 11 samples: 3 control, 3 unaffected BMPR2 mutation carriers, and 5 FPAH patients.
 
 ## Step 0: Clone and set up
 
-SSH into Cheaha and clone the repo:
-
 ```bash
 ssh <your-blazerid>@cheaha.rc.uab.edu
-git clone https://github.com/<your-org>/nf-core-cheaha-examples.git
+git clone https://github.com/informaticsclub/nf-core-cheaha-examples.git
 cd nf-core-cheaha-examples
 ```
 
 ### Install Nextflow
 
-The Cheaha `Nextflow` module is v21.08.0, which is too old for current nf-core pipelines (rnaseq 3.23.0 requires >=25.04.3). Run the install script once to get a compatible version:
+The Nextflow module on Cheaha (v21.08.0) is too old. nf-core/rnaseq 3.23.0 needs Nextflow 25.04.3 or newer. Run the install script once:
 
 ```bash
 bash scripts/install_nextflow.sh
 ```
 
-This downloads `./nextflow` (v25.10.4) into the repo directory and creates the `logs/` directory that SLURM needs.
+This puts a `./nextflow` binary (v25.10.4) in the repo directory and creates the `logs/` folder.
 
-Verify it works:
+Check that it works:
 
 ```bash
 module load Java
 ./nextflow -version
 ```
-
-You should see `nextflow version 25.10.4`.
 
 ## Step 1: Download FASTQs with fetchngs
 
@@ -94,28 +72,28 @@ You should see `nextflow version 25.10.4`.
 
 ### Input file
 
-The input is [`input/ids.csv`](../input/ids.csv) — a plain text file with one accession per line:
+The input is `input/ids.csv`, a text file with one accession per line:
 
 ```
 GSE79613
 ```
 
-You can use any supported accession type (GEO series, SRA project, individual run IDs, etc.). See the [fetchngs docs](https://nf-co.re/fetchngs/1.12.0/docs/usage/#introduction) for the full list.
+This can be a GEO series, SRA project, or individual run IDs. See the [fetchngs docs](https://nf-co.re/fetchngs/1.12.0/docs/usage/#introduction) for supported formats.
 
 ### Parameters
 
-The pipeline parameters are in [`params.fetchngs.yml`](../params.fetchngs.yml):
+See `params.fetchngs.yml`:
 
 ```yaml
-input: "input/ids.csv"          # Accession list
-outdir: "results/fetchngs"     # Output directory
-nf_core_pipeline: "rnaseq"      # Format samplesheet for nf-core/rnaseq
-download_method: "sratools"     # Use sratools (FTP is blocked on Cheaha compute nodes)
+input: "input/ids.csv"           # One accession per line
+outdir: "results/fetchngs"       # Where FASTQs and samplesheet go
+nf_core_pipeline: "rnaseq"       # Format samplesheet for nf-core/rnaseq
+download_method: "sratools"      # FTP is blocked on Cheaha; sratools uses HTTPS
 ```
 
-Key choices:
-- **`download_method: "sratools"`** — FTP is blocked on Cheaha compute nodes, so we use sratools which downloads over HTTPS instead.
-- **`nf_core_pipeline: "rnaseq"`** — This tells fetchngs to format the output samplesheet with the columns that nf-core/rnaseq expects (`sample`, `fastq_1`, `fastq_2`, `strandedness`). Strandedness defaults to `auto`.
+Why these settings:
+- `download_method: "sratools"` — Cheaha compute nodes block FTP. sratools downloads over HTTPS instead.
+- `nf_core_pipeline: "rnaseq"` — Tells fetchngs to write the samplesheet with columns rnaseq expects (`sample`, `fastq_1`, `fastq_2`, `strandedness`). Strandedness defaults to `auto`.
 
 ### Submit the job
 
@@ -157,17 +135,17 @@ results/fetchngs/
 └── pipeline_info/
 ```
 
-The critical file is **`results/fetchngs/samplesheet/samplesheet.csv`** — this is the input for the rnaseq pipeline.
+The important output is `results/fetchngs/samplesheet/samplesheet.csv`. This is what rnaseq reads as input in Step 2.
 
-> **Tip:** Open the samplesheet and verify sample names look reasonable. fetchngs uses SRA experiment aliases, which may not match the naming convention from the paper.
+It's worth opening this file to check that sample names look right. fetchngs uses SRA experiment aliases, which may not match the names in the paper.
 
 ### Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| `metadata/` exists but no `fastq/` | FTP downloads failed silently | Verify `download_method: "sratools"` in params |
-| `Unknown method invocation 'env'` | Using Nextflow 24.x or older | Re-run `bash scripts/install_nextflow.sh` to install 25.10.4+ |
-| Job completes instantly with no output | `./nextflow` not found | Run `bash scripts/install_nextflow.sh` first |
+If `metadata/` exists but `fastq/` is empty, the downloads likely failed because FTP is blocked. Check that `download_method: "sratools"` is set in `params.fetchngs.yml`.
+
+If you see `Unknown method invocation 'env'`, your Nextflow is too old. Re-run `bash scripts/install_nextflow.sh` to get v25.10.4.
+
+If the job finishes instantly with no output, `./nextflow` probably isn't installed. Run the install script first.
 
 ## Step 2: Run RNA-seq analysis
 
@@ -182,17 +160,15 @@ The critical file is **`results/fetchngs/samplesheet/samplesheet.csv`** — this
 
 ### Parameters
 
-The parameters are in [`params.rnaseq.yml`](../params.rnaseq.yml):
+See `params.rnaseq.yml`:
 
 ```yaml
-input: "results/fetchngs/samplesheet/samplesheet.csv"  # From fetchngs
-outdir: "results/rnaseq"                                # Output directory
-genome: "GRCh38"                                        # iGenomes reference
+input: "results/fetchngs/samplesheet/samplesheet.csv"  # Generated by fetchngs
+outdir: "results/rnaseq"                               # Where results go
+genome: "GRCh38"                                       # iGenomes reference (auto-downloaded)
 ```
 
-Key choices:
-- **`genome: "GRCh38"`** — Uses the [iGenomes](https://ewels.github.io/AWS-iGenomes/) GRCh38 reference, which includes the genome FASTA, STAR index, and gene annotation. Nextflow downloads these automatically on first use.
-- **`input`** — Points directly at the samplesheet that fetchngs created. The strandedness column is set to `auto`, so rnaseq will auto-detect it using Salmon.
+`genome: "GRCh38"` pulls the GRCh38 reference from [iGenomes](https://ewels.github.io/AWS-iGenomes/) (genome FASTA, STAR index, GTF annotation). Nextflow downloads and caches these on first use.
 
 ### Submit the job
 
@@ -206,7 +182,7 @@ cat results/fetchngs/samplesheet/samplesheet.csv
 sbatch scripts/run_rnaseq.sh
 ```
 
-> **Note:** The rnaseq pipeline is much more compute-intensive than fetchngs. STAR alignment uses ~38 GB of RAM per sample. The SLURM job requests 48 hours, but the actual runtime depends on cluster load.
+rnaseq is much heavier than fetchngs. STAR needs ~38 GB RAM per sample. The SLURM job requests 48 hours, but actual runtime depends on cluster load.
 
 ### Monitor progress
 
@@ -228,71 +204,49 @@ results/rnaseq/
 └── ...
 ```
 
-The **MultiQC report** (`results/rnaseq/multiqc/multiqc_report.html`) is the best starting point. It aggregates QC metrics across all samples into a single interactive HTML report.
+Start with the MultiQC report at `results/rnaseq/multiqc/multiqc_report.html`. It pulls together QC metrics from every step into one HTML page.
 
 ### Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| `No such file: samplesheet.csv` | Step 1 didn't complete | Check `results/fetchngs/samplesheet/` exists |
-| STAR jobs fail with OOM | Not enough memory | Cheaha config allows up to 750 GB; retries auto-increase |
-| Very slow genome download | First run downloads iGenomes reference (~30 GB) | This is cached for future runs |
+If you get `No such file: samplesheet.csv`, Step 1 didn't finish. Check that `results/fetchngs/samplesheet/` exists.
 
-## Understanding the Cheaha profile
+If STAR jobs fail with out-of-memory errors, the Cheaha config will auto-retry with more memory (up to 750 GB).
 
-Both scripts use `-profile cheaha`, which loads the [Cheaha config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) automatically from the [nf-core/configs](https://github.com/nf-core/configs) repository. This is the standard nf-core way to configure institutional HPC clusters. The profile configures:
+The first run may be slow while Nextflow downloads the iGenomes reference (~30 GB). It's cached after that.
 
-| Setting | Value | Why |
-|---|---|---|
-| `singularity.enabled` | `true` | Cheaha uses Singularity for containers (no Docker) |
-| `process.executor` | `slurm` | Each pipeline task is submitted as its own SLURM job |
-| `process.queue` | Dynamic | Automatically picks express/short/medium/long based on task time |
-| `resourceLimits` | 750 GB RAM, 128 CPUs, 150h | Matches Cheaha's maximum node specs |
-| `SINGULARITY_TMPDIR` | `$USER_SCRATCH` | Temp files go to scratch space, not `/tmp` |
+## The Cheaha profile
 
-You should not need to edit any config files. See the [Cheaha config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md) for details.
+Both scripts use `-profile cheaha`. This loads the [Cheaha config](https://github.com/nf-core/configs/blob/master/conf/cheaha.config) from the [nf-core/configs](https://github.com/nf-core/configs) repo at runtime. You don't need a local copy.
+
+It enables Singularity (Cheaha doesn't have Docker), sets SLURM as the executor so each task is submitted as its own job, and picks the right partition (express, short, medium, long) based on the task's time request. Resource limits match Cheaha's max node specs (750 GB RAM, 128 CPUs, 150h). Temp files go to `$USER_SCRATCH` instead of `/tmp`.
+
+You shouldn't need to change any of this. See the [Cheaha config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md) for details.
 
 ## Clean up
 
-After verifying your results, clean up intermediate files:
+The `work/` directory can get very large (hundreds of GB). Delete it once you're happy with the results:
 
 ```bash
-# Remove Nextflow work directory (can be very large)
-rm -rf work
-
-# Remove Nextflow cache files
-rm -rf .nextflow*
-
-# Remove logs
-rm -rf logs
-
-# Optionally remove results when no longer needed
-# rm -rf results
+rm -rf work .nextflow* logs
 ```
 
-> **Important:** The `work/` directory can grow to hundreds of gigabytes. Don't forget to clean it up, especially on shared HPC storage.
+Keep `results/` as long as you need it.
 
-## Adapting for your own data
+## Using your own data
 
-To use this repo with a different dataset:
+To run this with a different dataset:
 
-1. **Change the accession** — Edit [`input/ids.csv`](../input/ids.csv) with your GEO/SRA accession(s).
+1. Put your accession(s) in `input/ids.csv` (one per line).
+2. Change `genome` in `params.rnaseq.yml`. Common values:
+   - `GRCh38` (human), `GRCm39` (mouse), `BDGP6` (fly)
+   - Full list: [iGenomes](https://ewels.github.io/AWS-iGenomes/)
+3. If you know your library strandedness, edit it in the samplesheet after fetchngs runs. Otherwise leave it as `auto`.
+4. If memory is tight, add `aligner: "hisat2"` to `params.rnaseq.yml` (uses less RAM than STAR).
 
-2. **Change the reference genome** — Edit `genome` in [`params.rnaseq.yml`](../params.rnaseq.yml). Common options:
-   - `GRCh38` — Human
-   - `GRCm39` — Mouse
-   - `BDGP6` — *Drosophila*
-   - See the full list at [iGenomes](https://ewels.github.io/AWS-iGenomes/)
+## Links
 
-3. **Adjust strandedness** — By default, fetchngs sets strandedness to `auto` and rnaseq auto-detects it. If you know your library prep, you can set it to `forward`, `reverse`, or `unstranded` in the samplesheet.
-
-4. **Change the aligner** — The default is STAR + Salmon (`star_salmon`). Add `aligner: "hisat2"` to `params.rnaseq.yml` if you have memory constraints.
-
-## Further reading
-
-- [How nf-core pipelines work]({% link nf-core-overview.md %}) — Pipeline structure, config system, work directory, containers
-- [nf-core/fetchngs usage](https://nf-co.re/fetchngs/1.12.0/docs/usage/) · [output](https://nf-co.re/fetchngs/1.12.0/docs/output/)
-- [nf-core/rnaseq usage](https://nf-co.re/rnaseq/3.23.0/docs/usage/) · [output](https://nf-co.re/rnaseq/3.23.0/docs/output/)
-- [Cheaha nf-core config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md)
-- [Nextflow documentation](https://www.nextflow.io/docs/latest/)
-- [UAB Research Computing](https://www.uab.edu/it/home/research-computing)
+- [nf-core Overview]({% link nf-core-overview.md %}) (pipeline structure, config, work directory)
+- [fetchngs usage](https://nf-co.re/fetchngs/1.12.0/docs/usage/) / [output](https://nf-co.re/fetchngs/1.12.0/docs/output/)
+- [rnaseq usage](https://nf-co.re/rnaseq/3.23.0/docs/usage/) / [output](https://nf-co.re/rnaseq/3.23.0/docs/output/)
+- [Cheaha config docs](https://github.com/nf-core/configs/blob/master/docs/cheaha.md)
+- [Nextflow docs](https://www.nextflow.io/docs/latest/)

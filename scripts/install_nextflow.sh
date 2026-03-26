@@ -1,14 +1,17 @@
 #!/bin/bash
-# Install a compatible version of Nextflow locally.
-# The Cheaha Nextflow module (v21.08.0) is too old for current nf-core pipelines.
 #
-# Best practice: If you plan to use Nextflow across multiple projects,
-# install it to ~/bin instead so it is on your $PATH everywhere:
+# Install Nextflow into the current directory.
 #
-#   mkdir -p ~/bin && cd ~/bin
-#   export NXF_VER=25.10.4 && curl -s https://get.nextflow.io | bash
+# The Cheaha Nextflow module (v21.08.0) is too old for current nf-core
+# pipelines. This script installs a compatible version locally as
+# ./nextflow.  Run it once from the repo root.
 #
-# Then you can use 'nextflow' directly instead of './nextflow'.
+# Best practice for multiple projects:
+#   Install to ~/bin so nextflow is on your $PATH everywhere:
+#
+#     mkdir -p ~/bin && cd ~/bin
+#     export NXF_VER=25.10.4 && curl -s https://get.nextflow.io | bash
+#
 
 export NXF_VER=25.10.4
 
@@ -16,8 +19,8 @@ module load Java
 
 curl -s https://get.nextflow.io | bash
 
-# Create logs directory 
-# SLURM needs it to exist before running pipeline jobs
+# SLURM needs the logs/ directory to exist before any job starts,
+# because --output=logs/...  is evaluated before the script body runs.
 mkdir -p logs
 
-echo "Installed ./nextflow version $(./nextflow -version 2>&1 | grep -oP '[\d.]+')"
+echo "Installed ./nextflow v${NXF_VER}"

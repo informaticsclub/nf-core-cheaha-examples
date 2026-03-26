@@ -1,13 +1,13 @@
 ---
-title: nf-core Overview
+title: Overview of nf-core
 layout: default
 nav_order: 3
 ---
 
-# Understanding nf-core Pipelines
+# How nf-core Pipelines Work
 {: .no_toc }
 
-This guide explains what nf-core pipelines are, how they work, and what happens when you run one on Cheaha. It's written for people who are new to Nextflow and nf-core.
+A quick intro to Nextflow and nf-core for people who haven't used them before.
 {: .fs-6 .fw-300 }
 
 <details open markdown="block">
@@ -17,32 +17,22 @@ This guide explains what nf-core pipelines are, how they work, and what happens 
 {:toc}
 </details>
 
----
-
 ## What is Nextflow?
 
-[Nextflow](https://www.nextflow.io/) is a workflow engine. Instead of running bioinformatics tools one at a time in a bash script, you describe your analysis as a series of **processes** connected by **channels**. Nextflow then handles:
+[Nextflow](https://www.nextflow.io/) is a workflow engine. Instead of running tools one at a time in a bash script, you define steps (called **processes**) and Nextflow figures out the order and runs them in parallel where it can.
 
-- **Parallelism** — Running independent steps at the same time
-- **Job submission** — Sending each step to SLURM as its own job
-- **Resumability** — If a run fails halfway, `-resume` picks up where it left off
-- **Containers** — Each step runs inside an isolated Singularity container with its own software
+On an HPC like Cheaha, Nextflow also:
+- Submits each step as its own SLURM job
+- Runs each step inside a Singularity container (so you don't install anything)
+- Supports `-resume` to restart from where a failed run left off
 
-You don't need to write Nextflow code to use nf-core pipelines. But understanding the basics helps when troubleshooting.
+You don't need to write Nextflow code to use nf-core pipelines.
 
 ## What is nf-core?
 
-[nf-core](https://nf-co.re/) is a community project that builds and maintains **standardised, peer-reviewed bioinformatics pipelines** using Nextflow. There are 100+ pipelines covering genomics, transcriptomics, proteomics, and more.
+[nf-core](https://nf-co.re/) is a community that builds peer-reviewed bioinformatics pipelines on top of Nextflow. There are 100+ pipelines for genomics, transcriptomics, proteomics, etc.
 
-Every nf-core pipeline follows the same conventions:
-
-- Same parameter style (`--input`, `--outdir`, `--genome`)
-- Same config system (`-profile`, `-c`, `-params-file`)
-- Same container strategy (Docker/Singularity images for every tool)
-- Same output structure (`results/pipeline_info/`, MultiQC reports, etc.)
-- Same testing and CI infrastructure
-
-This means once you learn how one pipeline works, the others feel familiar.
+All nf-core pipelines share the same conventions: same parameter names (`--input`, `--outdir`, `--genome`), same config system, same container setup, same output layout. Once you've used one, the rest work the same way.
 
 ## How a pipeline runs on Cheaha
 
@@ -71,7 +61,7 @@ You (login node)
   └─ You check: squeue -u $USER, tail -f logs/*.log
 ```
 
-The **head job** (8 GB, 1 CPU) is lightweight — it just orchestrates. The real compute happens in the **task jobs** that Nextflow submits to SLURM. You'll see these in `squeue` with names like `nf-SRA_IDS_TO_RUNINFO` or `nf-STAR_ALIGN`.
+The head job (8 GB, 1 CPU) just coordinates. The real work happens in the task jobs that Nextflow submits to SLURM. You'll see these in `squeue` with names like `nf-SRA_IDS_TO_RUNINFO` or `nf-STAR_ALIGN`.
 
 ## Anatomy of an nf-core pipeline
 
@@ -131,19 +121,19 @@ process STAR_ALIGN {
 }
 ```
 
-Each process defines its **resources**, **container**, **inputs**, **outputs**, and the **shell command** to run.
+Each process defines what resources it needs, what container to use, its inputs and outputs, and the shell command.
 
 #### Modules
 
-A **module** is a reusable, self-contained process. nf-core maintains a shared library of modules at [nf-core/modules](https://github.com/nf-core/modules) — tools like STAR, Salmon, FastQC, Trim Galore, etc. Pipelines import these rather than rewriting them.
+A module wraps a single tool as a reusable process. nf-core maintains a shared library at [nf-core/modules](https://github.com/nf-core/modules) (STAR, Salmon, FastQC, etc.), so pipelines import them instead of reimplementing.
 
 #### Subworkflows
 
-A **subworkflow** chains multiple modules together. For example, the rnaseq pipeline has a subworkflow that runs STAR alignment followed by Salmon quantification.
+A subworkflow chains several modules together. For example, rnaseq has one that runs STAR alignment then Salmon quantification.
 
 #### Channels
 
-**Channels** are how data flows between processes. When fetchngs downloads a FASTQ file, it puts it on a channel. The next process (e.g., md5sum check) reads from that channel. Nextflow figures out the dependencies and runs everything that can run in parallel.
+Channels connect processes. When one process finishes, its output goes onto a channel and the next process picks it up. Nextflow uses this to figure out what can run in parallel.
 
 ## The work directory
 
@@ -165,7 +155,7 @@ work/
 └── ...
 ```
 
-This is extremely useful for debugging. If a task fails:
+When a task fails, this is where you look:
 
 1. Find the task hash in the Nextflow log or SLURM output
 2. Go to `work/<hash>/`
@@ -173,7 +163,7 @@ This is extremely useful for debugging. If a task fails:
 4. Read `.command.sh` to see exactly what command ran
 5. Check `.exitcode`
 
-> **Why is `work/` so large?** Every intermediate file lives here. A 10-sample RNA-seq run can generate hundreds of gigabytes of BAM files, trimmed FASTQs, etc. Always clean it up after a successful run.
+`work/` gets big because every intermediate file lives here (BAMs, trimmed FASTQs, etc.). A 10-sample RNA-seq run can easily use hundreds of gigabytes. Always delete it after a successful run.
 
 ## The config system
 
@@ -189,43 +179,25 @@ Pipeline defaults (nextflow.config)
 
 ### Parameters vs config
 
-This is the most common source of confusion:
+This is the most common point of confusion. **Parameters** (`--input`, `--genome`, `--outdir`) control what the pipeline does. You set them in a params file or on the command line. **Config** (`executor`, `singularity`, `queue`) controls how it runs on your cluster. You set it with `-profile cheaha` or `-c custom.config`.
 
-| | Parameters (`--` or params file) | Config (`-c` file) |
-|---|---|---|
-| **What** | Pipeline-specific inputs | Infrastructure settings |
-| **Examples** | `--input`, `--genome`, `--outdir` | `executor`, `singularity`, `queue` |
-| **How to set** | `-params-file params.yml` or `--flag` | `-profile cheaha` or `-c custom.config` |
-| **Who changes it** | You (the user) | Cluster admins / once per HPC |
-
-The params file (`params.fetchngs.yml`) says **what** to analyze. The profile (`-profile cheaha`) says **how** to run it on this cluster.
+The params file says what to analyze. The profile says how to run it.
 
 ## Containers on Cheaha
 
-Every nf-core process runs inside a **Singularity container** — a self-contained package with the exact software version needed. This means:
+Every process runs inside a Singularity container with the exact tool version it needs. You don't install STAR, Salmon, FastQC, or anything else. The containers are downloaded automatically and cached in `~/.singularity/`.
 
-- You don't need to install STAR, Salmon, FastQC, etc.
-- Every run uses identical software, regardless of what's installed on the cluster
-- Results are reproducible across different HPCs
-
-The Cheaha config enables Singularity and sets it to use `$USER_SCRATCH` for temp files. Containers are cached in `~/.singularity/` after the first download.
+The Cheaha profile sets Singularity to use `$USER_SCRATCH` for temp files.
 
 ## Reproducibility
 
-nf-core pipelines are designed for reproducible science. This repo pins:
+This repo pins everything needed to reproduce the analysis. The pipeline versions are fixed in the run scripts (`-r 1.12.0`, `-r 3.23.0`). Software versions are locked inside the containers. Parameters are tracked in YAML files. The reference genome is specified by name (`GRCh38`).
 
-| What | Where | Why |
-|---|---|---|
-| Pipeline version | `-r 1.12.0` / `-r 3.23.0` in scripts | Same code every time |
-| Software versions | Containers (automatic) | Same tools every time |
-| Parameters | `params.fetchngs.yml` / `params.rnaseq.yml` | Same settings every time |
-| Reference genome | `genome: "GRCh38"` | Same reference every time |
+A collaborator can clone this repo, run the same scripts, and get the same results.
 
-To share your analysis with a collaborator, you just share this repo. They clone it, run the same scripts, and get the same results.
+## Links
 
-## Further reading
-
-- [Nextflow training](https://training.nextflow.io/) — Official Nextflow tutorial
-- [nf-core tutorials](https://nf-co.re/docs/tutorials/) — nf-core-specific guides
-- [nf-core/modules](https://github.com/nf-core/modules) — Shared module library
-- [Nextflow patterns](https://nextflow-io.github.io/patterns/) — Common workflow patterns
+- [Nextflow training](https://training.nextflow.io/)
+- [nf-core tutorials](https://nf-co.re/docs/tutorials/)
+- [nf-core/modules](https://github.com/nf-core/modules)
+- [Nextflow patterns](https://nextflow-io.github.io/patterns/)
